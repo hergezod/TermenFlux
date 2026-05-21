@@ -504,6 +504,13 @@ void ThereminProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
                 vibratoPhase -= twoPi;
         }
 
+        if (!adsr.isActive())
+        {
+            hasPitchState = false;
+            currentMidiNote = -1;
+            vibratoFade = 0.0f;
+        }
+        
         lastEnv = env;
         lastFreq = currentFrequency;
     }
