@@ -172,28 +172,35 @@ void ThereminVisualDisplay::paint(juce::Graphics& g)
     }
 
     {
-        const float handYTop = antTopY + 5.0f;
-        const float handYBot = antBaseY - 15.0f;
-        const float pitchHandY = juce::jmap(smoothPitch, 0.0f, 1.0f, handYBot, handYTop);
+        const float handXFar  = antBaseX + 150.0f;
+		const float handXNear = antBaseX + 4.0f;
+		const float pitchHandX = juce::jmap(smoothPitch, 0.0f, 1.0f, handXFar, handXNear);
 
-        const float vibratoAmt    = processor.getVibratoAmount();
-        const float vibratoShakeX = vibratoAmt * 6.0f * smoothEnvelope
-                                    * std::sin(vibratoPhaseDisplay);
-        const float pitchHandX = antBaseX + 44.0f + vibratoShakeX;
+		const float vibratoAmt     = processor.getVibratoAmount();
+		const float vibratoShakeY  = vibratoAmt * 6.0f * smoothEnvelope
+                             * std::sin(vibratoPhaseDisplay);
+		const float pitchHandY = antTopY + (antBaseY - antTopY) * 0.45f + vibratoShakeY;
 
         const float handAlpha = juce::jlimit(0.0f, 1.0f,
                                     juce::jmap(smoothEnvelope, 0.0f, 1.0f, 0.0f, 0.95f));
-
+        
         if (pitchHandDrawable != nullptr && handAlpha > 0.001f)
-        {
-            constexpr float kHandSize = 52.0f;
-            const float hx = pitchHandX - kHandSize * 0.5f;
-            const float hy = pitchHandY - kHandSize * 0.5f;
-            pitchHandDrawable->drawWithin(g,
-                juce::Rectangle<float>(hx, hy, kHandSize, kHandSize),
-                juce::RectanglePlacement::centred,
-                handAlpha);
-        }
+		{
+			constexpr float kHandSize = 52.0f;
+			const float hx = pitchHandX - kHandSize * 0.5f;
+			const float hy = pitchHandY - kHandSize * 0.5f;
+
+			const float pitchAngle = juce::jmap(smoothPitch, 0.0f, 1.0f, -15.0f, 15.0f)
+									* (juce::MathConstants<float>::pi / 180.0f);
+
+			g.saveState();
+			g.addTransform(juce::AffineTransform::rotation(pitchAngle, pitchHandX, pitchHandY));
+			pitchHandDrawable->drawWithin(g,
+				juce::Rectangle<float>(hx, hy, kHandSize, kHandSize),
+				juce::RectanglePlacement::centred,
+				handAlpha);
+			g.restoreState();
+		}
 
     }
 
